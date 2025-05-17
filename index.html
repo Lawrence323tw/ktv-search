@@ -121,13 +121,19 @@
   <script>
     let allSongs = [];
 
+    function toHalfWidth(str) {
+      return str.replace(/[\uff01-\uff5e]/g, ch =>
+        String.fromCharCode(ch.charCodeAt(0) - 0xFEE0)
+      ).replace(/\u3000/g, ''); // 移除全形空白
+    }
+
     async function loadData() {
       const url = 'https://script.google.com/macros/s/AKfycby_pMU2vcFcXRf3vMvhMKKAfzBp5AJqEwXJIQGck20usWeGPuIkIcFT2GFGilfzrBQmOg/exec';
       try {
         const response = await fetch(url);
         allSongs = await response.json();
         console.log("資料載入完成，共", allSongs.length, "筆");
-        search(); // 載入後即時搜尋
+        search(); // 自動搜尋一次
       } catch (err) {
         alert("資料載入失敗");
         console.error(err);
@@ -135,8 +141,8 @@
     }
 
     function search() {
-      const singerKeyword = document.getElementById("searchSinger").value.trim().toLowerCase();
-      const songKeyword = document.getElementById("searchSong").value.trim().toLowerCase();
+      const singerKeyword = toHalfWidth(document.getElementById("searchSinger").value.trim().toLowerCase());
+      const songKeyword = toHalfWidth(document.getElementById("searchSong").value.trim().toLowerCase());
 
       const table = document.getElementById("resultTable");
       const tbody = document.getElementById("resultBody");
@@ -148,8 +154,10 @@
       }
 
       const results = allSongs.filter(item => {
-        const singerMatch = singerKeyword ? (typeof item.歌手 === "string" && item.歌手.toLowerCase().includes(singerKeyword)) : true;
-        const songMatch = songKeyword ? (typeof item.歌名 === "string" && item.歌名.toLowerCase().includes(songKeyword)) : true;
+        const singer = toHalfWidth(String(item.歌手 || "").toLowerCase());
+        const song = toHalfWidth(String(item.歌名 || "").toLowerCase());
+        const singerMatch = singerKeyword ? singer.includes(singerKeyword) : true;
+        const songMatch = songKeyword ? song.includes(songKeyword) : true;
         return singerMatch && songMatch;
       });
 
