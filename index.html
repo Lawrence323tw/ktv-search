@@ -11,13 +11,15 @@
       margin: 0;
     }
     h2 {
-      text-align: center;
+      margin: 0 0 20px 0;
+      text-align: left;
     }
     .search-container {
       display: flex;
-      justify-content: center;
-      gap: 10px;
+      justify-content: flex-start;
+      align-items: center;
       flex-wrap: wrap;
+      gap: 10px;
       margin-bottom: 20px;
     }
     input[type="text"] {
@@ -51,14 +53,22 @@
       body {
         padding: 15px;
       }
+      h2 {
+        font-size: 20px;
+      }
       .search-container {
         flex-direction: column;
-        align-items: stretch;
+        align-items: flex-start;
       }
-      input[type="text"], button {
+      input[type="text"] {
         width: 100%;
+        max-width: 250px;
         font-size: 18px;
-        margin: 5px 0;
+      }
+      button {
+        width: auto;
+        font-size: 18px;
+        margin-top: 5px;
       }
       table, thead, tbody, th, td, tr {
         display: block;
@@ -117,7 +127,7 @@
         const response = await fetch(url);
         allSongs = await response.json();
         console.log("資料載入完成，共", allSongs.length, "筆");
-        search(); // 載入完馬上觸發一次搜尋
+        search(); // 載入後即時搜尋
       } catch (err) {
         alert("資料載入失敗");
         console.error(err);
