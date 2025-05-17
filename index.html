@@ -29,7 +29,7 @@
 
     // 載入 JSON 資料
     async function loadData() {
-      const url = 'https://drive.google.com/uc?export=download&id=18NTvRVsPH8PftfAtxG_zZtyOLzRLH00U';
+      const url = 'https://lawrence323tw.github.io/ktv-search/ktv_data.json';
       try {
         const response = await fetch(url);
         allSongs = await response.json();
@@ -50,14 +50,14 @@
       if (!keyword || allSongs.length === 0) return;
 
       const results = allSongs.filter(item =>
-        (item["歌手"] && item["歌手"].toLowerCase().includes(keyword)) ||
-        (item["歌名"] && item["歌名"].toLowerCase().includes(keyword))
+        (item.歌手 && item.歌手.toLowerCase().includes(keyword)) ||
+        (item.歌名 && item.歌名.toLowerCase().includes(keyword))
       );
 
       if (results.length > 0) {
         results.forEach(row => {
           const tr = document.createElement("tr");
-          tr.innerHTML = `<td>${row["歌手"]}</td><td>${row["歌名"]}</td><td>${row["曲號"]}</td>`;
+          tr.innerHTML = `<td>${row.歌手}</td><td>${row.歌名}</td><td>${row.曲號}</td>`;
           tbody.appendChild(tr);
         });
         table.style.display = "";
@@ -67,7 +67,6 @@
       }
     }
 
-    // 初始載入資料
     loadData();
   </script>
 </body>
