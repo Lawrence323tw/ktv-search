@@ -27,9 +27,9 @@
   <script>
     let allSongs = [];
 
-    // 載入 JSON 資料
+    // 載入 JSON 資料（來自 Apps Script 網址）
     async function loadData() {
-      const url = 'https://lawrence323tw.github.io/ktv-search/ktv_data.json';
+      const url = 'https://script.google.com/macros/s/AKfycby_pMU2vcFcXRf3vMvhMKKAfzBp5AJqEwXJIQGck20usWeGPuIkIcFT2GFGilfzrBQmOg/exec';
       try {
         const response = await fetch(url);
         allSongs = await response.json();
