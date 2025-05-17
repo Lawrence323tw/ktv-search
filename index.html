@@ -29,7 +29,6 @@
     }
     button {
       padding: 10px 20px;
-      margin-left: 0;
       font-size: 16px;
       cursor: pointer;
     }
@@ -65,7 +64,7 @@
         display: block;
       }
       thead tr {
-        display: none; /* 隱藏表頭 */
+        display: none;
       }
       tbody tr {
         margin-bottom: 15px;
@@ -97,9 +96,8 @@
 <body>
   <h2>歌曲查詢</h2>
   <div class="search-container">
-    <input type="text" id="searchSinger" placeholder="請輸入歌手" />
-    <input type="text" id="searchSong" placeholder="請輸入歌名" />
-    <button onclick="search()">搜尋</button>
+    <input type="text" id="searchSinger" placeholder="請輸入歌手" oninput="search()" />
+    <input type="text" id="searchSong" placeholder="請輸入歌名" oninput="search()" />
     <button onclick="clearFields()">清除</button>
   </div>
 
@@ -119,6 +117,7 @@
         const response = await fetch(url);
         allSongs = await response.json();
         console.log("資料載入完成，共", allSongs.length, "筆");
+        search(); // 載入完馬上觸發一次搜尋
       } catch (err) {
         alert("資料載入失敗");
         console.error(err);
@@ -134,11 +133,7 @@
       tbody.innerHTML = "";
 
       if (!singerKeyword && !songKeyword) {
-        alert("請輸入歌手或歌名關鍵字");
-        return;
-      }
-      if (allSongs.length === 0) {
-        alert("資料尚未載入完成，請稍後再試");
+        table.style.display = "none";
         return;
       }
 
@@ -147,8 +142,6 @@
         const songMatch = songKeyword ? (typeof item.歌名 === "string" && item.歌名.toLowerCase().includes(songKeyword)) : true;
         return singerMatch && songMatch;
       });
-
-      console.log("搜尋結果筆數：", results.length);
 
       if (results.length > 0) {
         results.forEach(row => {
@@ -163,7 +156,6 @@
         table.style.display = "";
       } else {
         table.style.display = "none";
-        alert("查無結果！");
       }
     }
 
