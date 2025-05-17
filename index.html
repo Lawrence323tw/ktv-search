@@ -43,16 +43,22 @@
     // 搜尋功能
     function search() {
       const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
+      console.log("開始搜尋，關鍵字：", keyword);
       const table = document.getElementById("resultTable");
       const tbody = document.getElementById("resultBody");
       tbody.innerHTML = "";
 
-      if (!keyword || allSongs.length === 0) return;
+      if (!keyword || allSongs.length === 0) {
+        console.log("關鍵字為空或資料尚未載入");
+        return;
+      }
 
       const results = allSongs.filter(item =>
-        (item.歌手 && item.歌手.toLowerCase().includes(keyword)) ||
-        (item.歌名 && item.歌名.toLowerCase().includes(keyword))
+        (typeof item.歌手 === "string" && item.歌手.toLowerCase().includes(keyword)) ||
+        (typeof item.歌名 === "string" && item.歌名.toLowerCase().includes(keyword))
       );
+
+      console.log("搜尋結果筆數：", results.length);
 
       if (results.length > 0) {
         results.forEach(row => {
