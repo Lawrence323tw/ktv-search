@@ -4,27 +4,39 @@
   <meta charset="UTF-8" />
   <title>歌曲查詢</title>
   <style>
-    body { 
-      font-family: sans-serif; 
-      padding: 30px; 
-      background: #f9f9f9; 
+    body {
+      font-family: sans-serif;
+      padding: 30px;
+      background: #f9f9f9;
+      margin: 0;
     }
-    input {
+    h2 {
+      text-align: center;
+    }
+    .search-container {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    input[type="text"] {
       padding: 10px;
       width: 300px;
-      font-size: 14px;
+      max-width: 100%;
+      box-sizing: border-box;
+      font-size: 16px;
     }
     button {
       padding: 10px 20px;
-      margin-left: 10px;
-      font-size: 14px;
+      margin-left: 0;
+      font-size: 16px;
       cursor: pointer;
     }
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 20px;
-      font-size: 14px;
     }
     th, td {
       padding: 8px;
@@ -35,34 +47,61 @@
       background-color: #eee;
     }
 
-    /* 手機版優化 */
+    /* 手機優化 */
     @media (max-width: 600px) {
       body {
-        padding: 15px 10px;
+        padding: 15px;
       }
-      input {
-        width: 100% !important; /* 滿寬 */
-        font-size: 18px; /* 放大字體 */
-        margin-bottom: 10px;
+      .search-container {
+        flex-direction: column;
+        align-items: stretch;
       }
-      button {
-        width: 100% !important; /* 滿寬 */
-        margin-left: 0 !important;
-        margin-bottom: 10px;
+      input[type="text"], button {
+        width: 100%;
         font-size: 18px;
+        margin: 5px 0;
       }
-      table {
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+      thead tr {
+        display: none; /* 隱藏表頭 */
+      }
+      tbody tr {
+        margin-bottom: 15px;
+        border: 1px solid #ccc;
+        padding: 10px;
+        border-radius: 8px;
+        background: white;
+      }
+      tbody td {
+        border: none;
+        padding: 6px 0;
+        position: relative;
+        padding-left: 50%;
+        text-align: left;
         font-size: 16px;
+      }
+      tbody td::before {
+        position: absolute;
+        top: 6px;
+        left: 10px;
+        width: 45%;
+        white-space: nowrap;
+        font-weight: bold;
+        content: attr(data-label);
       }
     }
   </style>
 </head>
 <body>
   <h2>歌曲查詢</h2>
-  <input type="text" id="searchInputArtist" placeholder="請輸入歌手關鍵字" />
-  <input type="text" id="searchInputSong" placeholder="請輸入歌名關鍵字" />
-  <button onclick="search()">搜尋</button>
-  <button onclick="clearFields()">清除欄位</button>
+  <div class="search-container">
+    <input type="text" id="searchSinger" placeholder="請輸入歌手" />
+    <input type="text" id="searchSong" placeholder="請輸入歌名" />
+    <button onclick="search()">搜尋</button>
+    <button onclick="clearFields()">清除</button>
+  </div>
 
   <table id="resultTable" style="display: none;">
     <thead>
@@ -74,7 +113,6 @@
   <script>
     let allSongs = [];
 
-    // 載入 JSON 資料（來自 Google Drive）
     async function loadData() {
       const url = 'https://script.google.com/macros/s/AKfycby_pMU2vcFcXRf3vMvhMKKAfzBp5AJqEwXJIQGck20usWeGPuIkIcFT2GFGilfzrBQmOg/exec';
       try {
@@ -87,32 +125,27 @@
       }
     }
 
-    // 搜尋功能
     function search() {
-      const artistKeyword = document.getElementById("searchInputArtist").value.trim().toLowerCase();
-      const songKeyword = document.getElementById("searchInputSong").value.trim().toLowerCase();
+      const singerKeyword = document.getElementById("searchSinger").value.trim().toLowerCase();
+      const songKeyword = document.getElementById("searchSong").value.trim().toLowerCase();
 
-      console.log("開始搜尋，歌手關鍵字：", artistKeyword, "歌名關鍵字：", songKeyword);
       const table = document.getElementById("resultTable");
       const tbody = document.getElementById("resultBody");
       tbody.innerHTML = "";
 
-      if (!artistKeyword && !songKeyword) {
-        console.log("兩個關鍵字都空，停止搜尋");
+      if (!singerKeyword && !songKeyword) {
+        alert("請輸入歌手或歌名關鍵字");
+        return;
+      }
+      if (allSongs.length === 0) {
+        alert("資料尚未載入完成，請稍後再試");
         return;
       }
 
       const results = allSongs.filter(item => {
-        const artistMatch = (typeof item.歌手 === "string" && item.歌手.toLowerCase().includes(artistKeyword));
-        const songMatch = (typeof item.歌名 === "string" && item.歌名.toLowerCase().includes(songKeyword));
-        if (artistKeyword && songKeyword) {
-          return artistMatch && songMatch;
-        } else if (artistKeyword) {
-          return artistMatch;
-        } else if (songKeyword) {
-          return songMatch;
-        }
-        return false;
+        const singerMatch = singerKeyword ? (typeof item.歌手 === "string" && item.歌手.toLowerCase().includes(singerKeyword)) : true;
+        const songMatch = songKeyword ? (typeof item.歌名 === "string" && item.歌名.toLowerCase().includes(songKeyword)) : true;
+        return singerMatch && songMatch;
       });
 
       console.log("搜尋結果筆數：", results.length);
@@ -120,7 +153,11 @@
       if (results.length > 0) {
         results.forEach(row => {
           const tr = document.createElement("tr");
-          tr.innerHTML = `<td>${row.歌手}</td><td>${row.歌名}</td><td>${row.曲號}</td>`;
+          tr.innerHTML = `
+            <td data-label="歌手">${row.歌手}</td>
+            <td data-label="歌名">${row.歌名}</td>
+            <td data-label="曲號">${row.曲號}</td>
+          `;
           tbody.appendChild(tr);
         });
         table.style.display = "";
@@ -130,12 +167,11 @@
       }
     }
 
-    // 清除欄位
     function clearFields() {
-      document.getElementById("searchInputArtist").value = "";
-      document.getElementById("searchInputSong").value = "";
-      document.getElementById("resultBody").innerHTML = "";
+      document.getElementById("searchSinger").value = "";
+      document.getElementById("searchSong").value = "";
       document.getElementById("resultTable").style.display = "none";
+      document.getElementById("resultBody").innerHTML = "";
     }
 
     loadData();
