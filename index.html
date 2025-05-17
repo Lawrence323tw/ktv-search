@@ -2,20 +2,22 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8" />
-  <title>KTV 歌曲搜尋</title>
+  <title>歌曲查詢</title>
   <style>
     body { font-family: sans-serif; padding: 30px; background: #f9f9f9; }
-    input { padding: 10px; width: 300px; }
-    button { padding: 10px 20px; margin-left: 10px; }
+    input { padding: 10px; width: 280px; margin-right: 10px; }
+    button { padding: 10px 20px; margin-right: 10px; }
     table { width: 100%; border-collapse: collapse; margin-top: 20px; }
     th, td { padding: 8px; border: 1px solid #ccc; text-align: left; }
     th { background-color: #eee; }
   </style>
 </head>
 <body>
-  <h2>KTV 歌曲搜尋</h2>
-  <input type="text" id="searchInput" placeholder="請輸入歌手或歌名關鍵字" />
+  <h2>歌曲查詢</h2>
+  <input type="text" id="searchSinger" placeholder="請輸入歌手關鍵字" />
+  <input type="text" id="searchSong" placeholder="請輸入歌名關鍵字" />
   <button onclick="search()">搜尋</button>
+  <button onclick="clearFields()">清除欄位</button>
 
   <table id="resultTable" style="display: none;">
     <thead>
@@ -27,7 +29,6 @@
   <script>
     let allSongs = [];
 
-    // 載入 JSON 資料（來自 Apps Script 網址）
     async function loadData() {
       const url = 'https://script.google.com/macros/s/AKfycby_pMU2vcFcXRf3vMvhMKKAfzBp5AJqEwXJIQGck20usWeGPuIkIcFT2GFGilfzrBQmOg/exec';
       try {
@@ -40,23 +41,28 @@
       }
     }
 
-    // 搜尋功能
     function search() {
-      const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
-      console.log("開始搜尋，關鍵字：", keyword);
+      const singerKeyword = document.getElementById("searchSinger").value.trim().toLowerCase();
+      const songKeyword = document.getElementById("searchSong").value.trim().toLowerCase();
+
       const table = document.getElementById("resultTable");
       const tbody = document.getElementById("resultBody");
       tbody.innerHTML = "";
 
-      if (!keyword || allSongs.length === 0) {
-        console.log("關鍵字為空或資料尚未載入");
+      if (allSongs.length === 0) {
+        console.log("資料尚未載入");
+        return;
+      }
+      if (!singerKeyword && !songKeyword) {
+        alert("請輸入至少一個搜尋關鍵字！");
         return;
       }
 
-      const results = allSongs.filter(item =>
-        (typeof item.歌手 === "string" && item.歌手.toLowerCase().includes(keyword)) ||
-        (typeof item.歌名 === "string" && item.歌名.toLowerCase().includes(keyword))
-      );
+      const results = allSongs.filter(item => {
+        const singerMatch = singerKeyword ? (typeof item.歌手 === "string" && item.歌手.toLowerCase().includes(singerKeyword)) : true;
+        const songMatch = songKeyword ? (typeof item.歌名 === "string" && item.歌名.toLowerCase().includes(songKeyword)) : true;
+        return singerMatch && songMatch;
+      });
 
       console.log("搜尋結果筆數：", results.length);
 
@@ -71,6 +77,13 @@
         table.style.display = "none";
         alert("查無結果！");
       }
+    }
+
+    function clearFields() {
+      document.getElementById("searchSinger").value = "";
+      document.getElementById("searchSong").value = "";
+      document.getElementById("resultBody").innerHTML = "";
+      document.getElementById("resultTable").style.display = "none";
     }
 
     loadData();
