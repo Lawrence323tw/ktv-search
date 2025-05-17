@@ -17,7 +17,7 @@
   <input type="text" id="searchInput" placeholder="請輸入歌手或歌名關鍵字" />
   <button onclick="search()">搜尋</button>
 
-  <table id="resultTable" style="display:none;">
+  <table id="resultTable" style="display: none;">
     <thead>
       <tr><th>歌手</th><th>歌名</th><th>曲號</th></tr>
     </thead>
@@ -27,39 +27,37 @@
   <script>
     let allSongs = [];
 
+    // 載入 JSON 資料
     async function loadData() {
-      const url = "https://lawrence323tw.github.io/ktv-search/ktv_data.json";
+      const url = 'https://drive.google.com/uc?export=download&id=18NTvRVsPH8PftfAtxG_zZtyOLzRLH00U';
       try {
         const response = await fetch(url);
-        if (!response.ok) throw new Error("Network response was not ok");
         allSongs = await response.json();
         console.log("資料載入完成，共", allSongs.length, "筆");
-      } catch (error) {
-        alert("資料載入失敗，請檢查 JSON 檔案路徑或格式");
-        console.error(error);
+      } catch (err) {
+        alert("資料載入失敗");
+        console.error(err);
       }
     }
 
+    // 搜尋功能
     function search() {
       const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
       const table = document.getElementById("resultTable");
       const tbody = document.getElementById("resultBody");
       tbody.innerHTML = "";
 
-      if (!keyword || allSongs.length === 0) {
-        alert("請先輸入關鍵字並確保資料已載入");
-        return;
-      }
+      if (!keyword || allSongs.length === 0) return;
 
       const results = allSongs.filter(item =>
-        (item.singer && item.singer.toLowerCase().includes(keyword)) ||
-        (item.song && item.song.toLowerCase().includes(keyword))
+        (item["歌手"] && item["歌手"].toLowerCase().includes(keyword)) ||
+        (item["歌名"] && item["歌名"].toLowerCase().includes(keyword))
       );
 
       if (results.length > 0) {
         results.forEach(row => {
           const tr = document.createElement("tr");
-          tr.innerHTML = `<td>${row.singer}</td><td>${row.song}</td><td>${row.code}</td>`;
+          tr.innerHTML = `<td>${row["歌手"]}</td><td>${row["歌名"]}</td><td>${row["曲號"]}</td>`;
           tbody.appendChild(tr);
         });
         table.style.display = "";
@@ -69,7 +67,8 @@
       }
     }
 
-    window.onload = loadData;
+    // 初始載入資料
+    loadData();
   </script>
 </body>
 </html>
