@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>歌曲查詢</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       font-family: sans-serif;
@@ -13,6 +14,7 @@
     h2 {
       margin: 0 0 20px 0;
       text-align: left;
+      font-size: 24px;
     }
     .search-container {
       display: flex;
@@ -23,15 +25,15 @@
       margin-bottom: 20px;
     }
     input[type="text"] {
-      padding: 10px;
+      padding: 12px;
       width: 300px;
       max-width: 100%;
       box-sizing: border-box;
-      font-size: 16px;
+      font-size: 18px;
     }
     button {
-      padding: 10px 20px;
-      font-size: 16px;
+      padding: 12px 20px;
+      font-size: 18px;
       cursor: pointer;
     }
     table {
@@ -48,57 +50,21 @@
       background-color: #eee;
     }
 
-    /* 手機優化 */
+    /* 手機 RWD：只做微調，保持原樣式不變形 */
     @media (max-width: 600px) {
       body {
-        padding: 15px;
+        padding: 20px;
       }
       h2 {
-        font-size: 20px;
-      }
-      .search-container {
-        flex-direction: column;
-        align-items: flex-start;
+        font-size: 22px;
       }
       input[type="text"] {
         width: 100%;
-        max-width: 250px;
         font-size: 18px;
       }
       button {
         width: auto;
         font-size: 18px;
-        margin-top: 5px;
-      }
-      table, thead, tbody, th, td, tr {
-        display: block;
-      }
-      thead tr {
-        display: none;
-      }
-      tbody tr {
-        margin-bottom: 15px;
-        border: 1px solid #ccc;
-        padding: 10px;
-        border-radius: 8px;
-        background: white;
-      }
-      tbody td {
-        border: none;
-        padding: 6px 0;
-        position: relative;
-        padding-left: 50%;
-        text-align: left;
-        font-size: 16px;
-      }
-      tbody td::before {
-        position: absolute;
-        top: 6px;
-        left: 10px;
-        width: 45%;
-        white-space: nowrap;
-        font-weight: bold;
-        content: attr(data-label);
       }
     }
   </style>
@@ -124,7 +90,7 @@
     function toHalfWidth(str) {
       return str.replace(/[\uff01-\uff5e]/g, ch =>
         String.fromCharCode(ch.charCodeAt(0) - 0xFEE0)
-      ).replace(/\u3000/g, ''); // 移除全形空白
+      ).replace(/\u3000/g, '');
     }
 
     async function loadData() {
@@ -133,7 +99,7 @@
         const response = await fetch(url);
         allSongs = await response.json();
         console.log("資料載入完成，共", allSongs.length, "筆");
-        search(); // 自動搜尋一次
+        search();
       } catch (err) {
         alert("資料載入失敗");
         console.error(err);
@@ -165,9 +131,9 @@
         results.forEach(row => {
           const tr = document.createElement("tr");
           tr.innerHTML = `
-            <td data-label="歌手">${row.歌手}</td>
-            <td data-label="歌名">${row.歌名}</td>
-            <td data-label="曲號">${row.曲號}</td>
+            <td>${row.歌手}</td>
+            <td>${row.歌名}</td>
+            <td>${row.曲號}</td>
           `;
           tbody.appendChild(tr);
         });
