@@ -2,94 +2,121 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>歌曲查詢</title>
   <style>
     body {
       font-family: sans-serif;
-      padding: 20px;
+      padding: 30px;
+      background: #f9f9f9;
       margin: 0;
-      background: #f4f4f4;
     }
-
     h2 {
-      font-size: 24px;
-      margin-bottom: 20px;
+      margin: 0 0 20px 0;
       text-align: left;
     }
-
     .search-container {
       display: flex;
+      justify-content: flex-start;
+      align-items: center;
       flex-wrap: wrap;
       gap: 10px;
       margin-bottom: 20px;
     }
-
-    .search-container input[type="text"],
-    .search-container button {
-      font-size: 16px;
+    input[type="text"] {
       padding: 10px;
+      width: 300px;
+      max-width: 100%;
+      box-sizing: border-box;
+      font-size: 16px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      padding: 8px;
       border: 1px solid #ccc;
-      border-radius: 6px;
+      text-align: left;
+    }
+    th {
+      background-color: #eee;
     }
 
-    .search-container input[type="text"] {
-      flex: 1 1 200px;
-      min-width: 0;
-    }
-
-    .search-container button {
-      background-color: #007bff;
-      color: white;
-      border: none;
-    }
-
-    .search-container button:hover {
-      background-color: #0056b3;
-    }
-
-    .song-card {
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      padding: 15px;
-      margin-bottom: 15px;
-    }
-
-    .song-card div {
-      margin-bottom: 5px;
-    }
-
-    .song-label {
-      font-weight: bold;
-      margin-right: 5px;
-    }
-
+    /* 手機優化 */
     @media (max-width: 600px) {
+      body {
+        padding: 15px;
+      }
       h2 {
         font-size: 20px;
       }
       .search-container {
         flex-direction: column;
+        align-items: flex-start;
       }
-      .search-container input,
-      .search-container button {
+      input[type="text"] {
         width: 100%;
+        max-width: 250px;
         font-size: 18px;
+      }
+      button {
+        width: auto;
+        font-size: 18px;
+        margin-top: 5px;
+      }
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+      thead tr {
+        display: none;
+      }
+      tbody tr {
+        margin-bottom: 15px;
+        border: 1px solid #ccc;
+        padding: 10px;
+        border-radius: 8px;
+        background: white;
+      }
+      tbody td {
+        border: none;
+        padding: 6px 0;
+        position: relative;
+        padding-left: 50%;
+        text-align: left;
+        font-size: 16px;
+      }
+      tbody td::before {
+        position: absolute;
+        top: 6px;
+        left: 10px;
+        width: 45%;
+        white-space: nowrap;
+        font-weight: bold;
+        content: attr(data-label);
       }
     }
   </style>
 </head>
 <body>
   <h2>歌曲查詢</h2>
-
   <div class="search-container">
     <input type="text" id="searchSinger" placeholder="請輸入歌手" oninput="search()" />
     <input type="text" id="searchSong" placeholder="請輸入歌名" oninput="search()" />
     <button onclick="clearFields()">清除</button>
   </div>
 
-  <div id="resultContainer"></div>
+  <table id="resultTable" style="display: none;">
+    <thead>
+      <tr><th>歌手</th><th>歌名</th><th>曲號</th></tr>
+    </thead>
+    <tbody id="resultBody"></tbody>
+  </table>
 
   <script>
     let allSongs = [];
@@ -97,7 +124,7 @@
     function toHalfWidth(str) {
       return str.replace(/[\uff01-\uff5e]/g, ch =>
         String.fromCharCode(ch.charCodeAt(0) - 0xFEE0)
-      ).replace(/\u3000/g, '');
+      ).replace(/\u3000/g, ''); // 移除全形空白
     }
 
     async function loadData() {
@@ -106,7 +133,7 @@
         const response = await fetch(url);
         allSongs = await response.json();
         console.log("資料載入完成，共", allSongs.length, "筆");
-        search();
+        search(); // 自動搜尋一次
       } catch (err) {
         alert("資料載入失敗");
         console.error(err);
@@ -117,10 +144,12 @@
       const singerKeyword = toHalfWidth(document.getElementById("searchSinger").value.trim().toLowerCase());
       const songKeyword = toHalfWidth(document.getElementById("searchSong").value.trim().toLowerCase());
 
-      const container = document.getElementById("resultContainer");
-      container.innerHTML = "";
+      const table = document.getElementById("resultTable");
+      const tbody = document.getElementById("resultBody");
+      tbody.innerHTML = "";
 
       if (!singerKeyword && !songKeyword) {
+        table.style.display = "none";
         return;
       }
 
@@ -134,22 +163,25 @@
 
       if (results.length > 0) {
         results.forEach(row => {
-          const card = document.createElement("div");
-          card.className = "song-card";
-          card.innerHTML = `
-            <div><span class="song-label">歌手：</span>${row.歌手}</div>
-            <div><span class="song-label">歌名：</span>${row.歌名}</div>
-            <div><span class="song-label">曲號：</span>${row.曲號}</div>
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td data-label="歌手">${row.歌手}</td>
+            <td data-label="歌名">${row.歌名}</td>
+            <td data-label="曲號">${row.曲號}</td>
           `;
-          container.appendChild(card);
+          tbody.appendChild(tr);
         });
+        table.style.display = "";
+      } else {
+        table.style.display = "none";
       }
     }
 
     function clearFields() {
       document.getElementById("searchSinger").value = "";
       document.getElementById("searchSong").value = "";
-      document.getElementById("resultContainer").innerHTML = "";
+      document.getElementById("resultTable").style.display = "none";
+      document.getElementById("resultBody").innerHTML = "";
     }
 
     loadData();
